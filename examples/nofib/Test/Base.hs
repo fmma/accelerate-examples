@@ -85,8 +85,8 @@ absRelTol :: (RealFloat a, Ord a) => a -> a -> a -> a -> Bool
 absRelTol epsilonAbs epsilonRel u v
   |  isInfinite u
   && isInfinite v          = True
-  |  isNaN u
-  && isNaN v               = True
+  |  P.isNaN u
+  && P.isNaN v             = True
   | abs (u-v) < epsilonAbs = True
   | abs u > abs v          = abs ((u-v) / u) < epsilonRel
   | otherwise              = abs ((v-u) / v) < epsilonRel
