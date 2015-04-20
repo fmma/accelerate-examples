@@ -48,7 +48,7 @@ main = do
             idx  = run1 backend l (A.fromList Z [abcd])
             l digest = A.collect
                      $ A.foldSeq max (-1)
-                     $ A.zipWithSeq (hashcatWord digest)
+                     $ hashcatWord (A.the digest)
                            (A.toSeq (Z :. All :. Split) (A.use dict))
                            (A.toSeq (Z :. Split) (iota (Sugar.size (Sugar.shape dict))))
 

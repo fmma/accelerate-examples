@@ -69,6 +69,22 @@ run1 PTX         f = PTX.run1 f
 run1 Cilk        f = Cilk.run . f . use
 #endif
 
+streamOut :: (Arrays a) => Backend -> Seq [a] -> [a]
+streamOut Interpreter = Interp.streamOut
+#ifdef ACCELERATE_CUDA_BACKEND
+streamOut CUDA        = CUDA.streamOut
+#endif
+#ifdef ACCELERATE_LLVM_NATIVE_BACKEND
+streamOut CPU         = CPU.streamOut
+#endif
+#ifdef ACCELERATE_LLVM_PTX_BACKEND
+streamOut PTX         = PTX.streamOut
+#endif
+#ifdef ACCELERATE_CILK_BACKEND
+streamOut Cilk        = error "streamOut not defined for Cilk"
+#endif
+
+
 run2 :: (Arrays a, Arrays b, Arrays c) => Backend -> (Acc a -> Acc b -> Acc c) -> a -> b -> c
 run2 backend f x y = run1 backend (A.uncurry f) (x,y)
 

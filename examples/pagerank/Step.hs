@@ -42,13 +42,9 @@ stepRankSeq p sizes ranks
       zeroes :: Acc (Vector Rank)
       zeroes = A.fill (shape ranks) 0.0
 
-      -- Ignore shape vector.
-      addUpdates' :: Acc (Vector Rank) -> Acc (Vector Z) -> Acc (Vector Update) -> Acc (Vector Rank)
-      addUpdates' = const . addUpdates
-
     in A.collect
-     $ A.foldSeqFlatten addUpdates' zeroes
-     $ A.mapSeq (A.map (contribution sizes ranks))
+     $ A.foldSeqFlatten addUpdates zeroes
+     $ A.mapS (contribution sizes ranks)
          (A.toSeq (Z :. Split) (use p))
 
 -- | Perform one iteration step for the internal Page Rank algorithm.

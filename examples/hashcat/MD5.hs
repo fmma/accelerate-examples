@@ -1,4 +1,4 @@
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE ViewPatterns, TypeOperators #-}
 
 module MD5 (
 
@@ -47,14 +47,15 @@ hashcatDict dict passwd
 -- given unknown md5, returns the given index. If not matched, this
 -- returns (-1).
 --
-hashcatWord :: Acc (Scalar MD5)
-            -> Acc (Vector Word32)
-            -> Acc (Scalar Int)
-            -> Acc (Scalar Int)
+hashcatWord :: Exp MD5
+            -> Seq [Vector Word32]
+            -> Seq [Scalar Int]
+            -> Seq [Scalar Int]
 hashcatWord passwd word ix
-  = unit (crypt `cmp` the passwd ? (the ix, -1))
+  = mapS (\ i -> crypt word `cmp` passwd ? (i, -1)) ix
   where
-    crypt       = md5Round (\i -> word A.! index1 i)
+    crypt :: Seq [Vector Word32] -> Exp MD5
+    crypt ws = md5Round (\ i -> ws A.<!> index1 (constant i))
     cmp x y     = let (x1,x2,x3,x4) = unlift x
                       (y1,y2,y3,y4) = unlift y
                   in x1 ==* y1 &&* x2 ==* y2 &&* x3 ==* y3 &&* x4 ==* y4
@@ -76,9 +77,9 @@ md5 :: Acc Dictionary -> Acc (Vector MD5)
 md5 dict
   = let n = A.snd . unindex2 $ A.shape dict
     in
-     A.generate (index1 n) (\ (unindex1 -> ix) -> md5Round (\i -> dict A.! index2 i ix))
+     A.generate (index1 n) (\ (unindex1 -> ix) -> md5Round (\i -> dict A.! index2 (constant i) ix))
 
-md5Round :: (Exp Int -> Exp Word32) -> Exp MD5
+md5Round :: (Int -> Exp Word32) -> Exp MD5
 md5Round fetch
   = lift
   $ foldl step (a0,b0,c0,d0) [0..64]
@@ -94,10 +95,10 @@ md5Round fetch
 
     get :: Int -> Exp Word32
     get i
-      | i < 16    = fetch (constant i)
-      | i < 32    = fetch (constant ((5*i + 1) `rem` 16))
-      | i < 48    = fetch (constant ((3*i + 5) `rem` 16))
-      | otherwise = fetch (constant ((7*i)     `rem` 16))
+      | i < 16    = fetch i
+      | i < 32    = fetch ((5*i + 1) `rem` 16)
+      | i < 48    = fetch ((3*i + 5) `rem` 16)
+      | otherwise = fetch ((7*i)     `rem` 16)
 
     -- Initial values. For a multi-round implementation we would initialise the
     -- context with these values, and then after applying the round update the

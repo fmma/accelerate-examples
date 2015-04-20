@@ -25,6 +25,7 @@ main = do
       chunk     = get configChunkSize conf
       noSeq     = get configNoSeq conf
 
+  print noSeq
   if get configCount conf
      then void (countPages linksPath)
      else rank backend noSeq steps chunk linksPath titlesPath
