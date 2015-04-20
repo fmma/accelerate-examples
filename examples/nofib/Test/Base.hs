@@ -3,6 +3,7 @@
 module Test.Base where
 
 import Prelude                                          as P
+
 import Data.Array.Accelerate                            as A
 import Data.Array.Accelerate.Array.Sugar
 
